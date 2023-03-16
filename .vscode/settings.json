@@ -3,6 +3,7 @@
     "godotenv",
     "joho",
     "linebot",
+    "msgn",
     "sashabaranov"
   ]
 }

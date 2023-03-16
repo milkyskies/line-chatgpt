@@ -1,4 +1,4 @@
-package linebot
+package messenger
 
 import (
 	"fmt"
@@ -11,9 +11,10 @@ import (
 
 type LineBot struct {
 	Client *linebot.Client
+	ChatGPT chatgpt.ChatGPT
 }
 
-func NewBot() (*LineBot, error) {
+func NewLineBot(gptService chatgpt.ChatGPT) (*LineBot, error) {
 	channelSecret := os.Getenv("LINE_CHANNEL_SECRET")
 	channelToken := os.Getenv("LINE_CHANNEL_ACCESS_TOKEN")
 
@@ -23,7 +24,7 @@ func NewBot() (*LineBot, error) {
 		return nil, fmt.Errorf("failed to create bot: %w", err)
 	}
 
-	return &LineBot{bot}, nil
+	return &LineBot{bot, gptService}, nil
 }
 
 func (b *LineBot) HandleRequest(r *http.Request) error {
@@ -53,18 +54,24 @@ func (b *LineBot) handleMessageEvent(event *linebot.Event) error {
 		return nil
 	}
 
-	openai, err := chatgpt.NewChatGPT()
-	if err != nil {
-		return fmt.Errorf("failed to create OpenAI client: %w", err)
-	}
+	openai := chatgpt.NewChatGPT()
 
 	openaiResponse, err := openai.GetResponse(message.Text)
 	if err != nil {
 		return fmt.Errorf("could not get response: %w", err)
 	}
 
+	b.sendMessage(event.Source.UserID, openaiResponse)
+
 	newMessage := linebot.NewTextMessage(openaiResponse)
 	_, err = b.Client.PushMessage(event.Source.UserID, newMessage).Do()
+
+	return err
+}
+
+func (b *LineBot) sendMessage(userID string, message string) error {
+	newMessage := linebot.NewTextMessage(message)
+	_, err := b.Client.PushMessage(userID, newMessage).Do()
 
 	return err
 }

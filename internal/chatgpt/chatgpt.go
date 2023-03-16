@@ -12,11 +12,11 @@ type ChatGPT struct {
 	Client *openai.Client
 }
 
-func NewChatGPT() (*ChatGPT, error) {
+func NewChatGPT() (*ChatGPT) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	client := openai.NewClient(apiKey)
 
-	return &ChatGPT{client}, nil
+	return &ChatGPT{client}
 }
 
 func (c *ChatGPT) GetResponse(prompt string) (string, error) {
