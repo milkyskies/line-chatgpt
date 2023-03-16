@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	openai "github.com/sashabaranov/go-openai"
 )
@@ -38,6 +39,10 @@ func (c *OpenAI) GetResponse(prompt string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println(resp.Choices[0].Message.Content)
-	return resp.Choices[0].Message.Content, nil
+	response := resp.Choices[0].Message.Content
+
+	trimmedResponse := strings.TrimLeft(response, "\n")
+
+	fmt.Println(trimmedResponse)
+	return trimmedResponse, nil
 }
