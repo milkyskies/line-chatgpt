@@ -29,7 +29,7 @@ func NewBot() (*LineBot, error) {
 func (b *LineBot) HandleRequest(r *http.Request) error {
 	// prompt := "Hi! How are you doing?"
 
-	openai, err := chatgpt.NewOpenAI()
+	openai, err := chatgpt.NewChatGPT()
 	if err != nil {
 		return fmt.Errorf("failed to create OpenAI client: %w", err)
 	}

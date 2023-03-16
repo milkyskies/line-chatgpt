@@ -9,18 +9,18 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-type OpenAI struct {
+type ChatGPT struct {
 	Client *openai.Client
 }
 
-func NewOpenAI() (*OpenAI, error) {
+func NewChatGPT() (*ChatGPT, error) {
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	client := openai.NewClient(apiKey)
 
-	return &OpenAI{client}, nil
+	return &ChatGPT{client}, nil
 }
 
-func (c *OpenAI) GetResponse(prompt string) (string, error) {
+func (c *ChatGPT) GetResponse(prompt string) (string, error) {
 	resp, err := c.Client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
