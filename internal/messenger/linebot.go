@@ -10,7 +10,7 @@ import (
 )
 
 type LineBot struct {
-	Client *linebot.Client
+	Client  *linebot.Client
 	ChatGPT chatgpt.ChatGPT
 }
 
@@ -61,17 +61,17 @@ func (b *LineBot) handleMessageEvent(event *linebot.Event) error {
 		return fmt.Errorf("could not get response: %w", err)
 	}
 
-	b.sendMessage(event.Source.UserID, openaiResponse)
+	err = b.sendMessage(event.Source.UserID, openaiResponse)
+	if err != nil {
+		return fmt.Errorf("could not send message: %w", err)
+	}
 
-	newMessage := linebot.NewTextMessage(openaiResponse)
-	_, err = b.Client.PushMessage(event.Source.UserID, newMessage).Do()
-
-	return err
+	return nil
 }
 
-func (b *LineBot) sendMessage(userID string, message string) error {
+func (b *LineBot) sendMessage(destination string, message string) error {
 	newMessage := linebot.NewTextMessage(message)
-	_, err := b.Client.PushMessage(userID, newMessage).Do()
+	_, err := b.Client.PushMessage(destination, newMessage).Do()
 
 	return err
 }
