@@ -27,39 +27,44 @@ func NewBot() (*LineBot, error) {
 }
 
 func (b *LineBot) HandleRequest(r *http.Request) error {
-	// prompt := "Hi! How are you doing?"
+	events, err := b.Client.ParseRequest(r)
+	if err != nil {
+		return fmt.Errorf("failed to parse request: %w", err)
+	}
+
+	return b.handleEvents(events)
+}
+
+func (b *LineBot) handleEvents(events []*linebot.Event) error {
+	for _, event := range events {
+		if event.Type == linebot.EventTypeMessage {
+			if err := b.handleMessageEvent(event); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (b *LineBot) handleMessageEvent(event *linebot.Event) error {
+	message, ok := event.Message.(*linebot.TextMessage)
+	if !ok {
+		return nil
+	}
 
 	openai, err := chatgpt.NewChatGPT()
 	if err != nil {
 		return fmt.Errorf("failed to create OpenAI client: %w", err)
 	}
 
-	// message := linebot.NewTextMessage(response)
-	// b.Client.BroadcastMessage(message).Do()
-
-	events, err := b.Client.ParseRequest(r)
+	openaiResponse, err := openai.GetResponse(message.Text)
 	if err != nil {
-		return fmt.Errorf("failed to parse request: %w", err)
+		return fmt.Errorf("could not get response: %w", err)
 	}
 
-	for _, event := range events {
-		switch event.Type {
-		case linebot.EventTypeMessage:
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-				text := message.Text
+	newMessage := linebot.NewTextMessage(openaiResponse)
+	_, err = b.Client.PushMessage(event.Source.UserID, newMessage).Do()
 
-				openaiResponse, err := openai.GetResponse(text)
-				if err != nil {
-					return fmt.Errorf("could not get response: %w", err)
-				}
-
-				newMessage := linebot.NewTextMessage(openaiResponse)
-
-				b.Client.PushMessage(event.Source.UserID, newMessage).Do()
-			}
-		}
-	}
-
-	return nil
+	return err
 }
