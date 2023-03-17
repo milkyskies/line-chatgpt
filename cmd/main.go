@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 
-	"github.com/milkyskies/line-chatgpt/internal/messenger"
-	"github.com/milkyskies/line-chatgpt/internal/chatgpt"
-	transportHttp "github.com/milkyskies/line-chatgpt/internal/transport/http"
+	"github.com/milkyskies/line-chatgpt/internal/bot"
+	"github.com/milkyskies/line-chatgpt/internal/bot/chatgpt"
+	"github.com/milkyskies/line-chatgpt/internal/chat"
+	"github.com/milkyskies/line-chatgpt/internal/chat/line"
+	"github.com/milkyskies/line-chatgpt/internal/handler"
+	"github.com/milkyskies/line-chatgpt/internal/transport/http"
+	"github.com/milkyskies/line-chatgpt/internal/transport/webhook"
 )
 
 func Run() error {
@@ -19,31 +25,32 @@ func Run() error {
 		return err
 	}
 
-	// rename to services later
-	gptService := chatgpt.NewChatGPT()
+	chatServices := chat.NewChatServices()
+	botServices := bot.NewBotServices()
 
-	msgnService, err := messenger.NewLineBot(*gptService) 
+	chatGPT := chatgpt.NewChatGPT(os.Getenv("OPENAI_API_KEY"))
+	botServices.Register(bot.ChatGPT, chatGPT)
+
+	// Create Line instance and MessageHandler instance
+	lineChat, _ := line.NewLineChat(os.Getenv("LINE_CHANNEL_SECRET"), os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"))
+	chatServices.Register(chat.LineChat, lineChat)
+
+	messageHandler := handler.NewMessageHandler(chatServices, botServices)
+
+	// Register the LINE webhook handler
+	lineWebhookHandler := webhook.NewLineWebhookHandler(lineChat, messageHandler)
+
+	// Initialize the HTTP handler
+	httpHandler, err := http.NewHandler(lineWebhookHandler)
 	if err != nil {
-		fmt.Println("Error creating LINE bot")
-		return err
+		log.Fatalf("Failed to initialize HTTP handler: %v", err)
 	}
 
-
-	httpHandler, err := transportHttp.NewHandler(*msgnService)
-	if err != nil {
-		fmt.Println("Error creating HTTP handler")
-		return err
-	}
-
+	// Serve the HTTP handler
 	if err := httpHandler.Serve(); err != nil {
-		return err
+		log.Fatalf("Failed to serve HTTP handler: %v", err)
 	}
 
-	// bot, err := linebot.NewBot()
-	// if err != nil {
-	// 	fmt.Println("Error creating LINE bot")
-	// 	return err
-	// }
 
 	return nil
 }

@@ -2,24 +2,17 @@ package chatgpt
 
 import (
 	"context"
-	"os"
+	"errors"
 	"strings"
 
 	openai "github.com/sashabaranov/go-openai"
 )
 
-type ChatGPT struct {
-	Client *openai.Client
-}
+var (
+	ErrReplyGenerationFailed = errors.New("reply generation failed")
+)
 
-func NewChatGPT() (*ChatGPT) {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	client := openai.NewClient(apiKey)
-
-	return &ChatGPT{client}
-}
-
-func (c *ChatGPT) GetResponse(prompt string) (string, error) {
+func (c *ChatGPT) GenerateReply(prompt string) (string, error) {
 	resp, err := c.createChatCompletion(prompt)
 	if err != nil {
 		return "", err

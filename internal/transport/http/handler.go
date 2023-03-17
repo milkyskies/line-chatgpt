@@ -10,19 +10,18 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/milkyskies/line-chatgpt/internal/messenger"
 )
 
 type Handler struct {
 	Router *mux.Router
 	Server *http.Server
-	MessengerService messenger.LineBot
+	LineWebhookHandler http.Handler
 }
 
-func NewHandler(msgnService messenger.LineBot) (*Handler, error) {
+func NewHandler(lineWebhookHandler http.Handler) (*Handler, error) {
 	h := &Handler{
 		Router: mux.NewRouter(),
-		MessengerService: msgnService,
+		LineWebhookHandler: lineWebhookHandler,
 	}
 
 	h.mapRoutes()
@@ -41,9 +40,7 @@ func (h *Handler) mapRoutes() {
 		fmt.Fprintf(w, "I am alive")
 	})
 
-	h.Router.HandleFunc("/line", func(w http.ResponseWriter, r *http.Request) {
-		h.MessengerService.HandleRequest(r)
-	})
+	h.Router.Handle("/line", h.LineWebhookHandler)
 }
 
 func (h *Handler) Serve() error {
