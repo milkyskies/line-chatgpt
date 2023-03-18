@@ -1,0 +1,17 @@
+#V2
+SELECT * FROM person;
+SELECT * FROM personchad;
+SELECT * FROM person:chad;
+exit
+quit
+[200~SELECT * FROM message;
+SELECT * FROM message;
+SELECT * FROM message ORDER BY SentAt DESC;
+SELECT SentAt FROM message ORDER BY SentAt DESC;
+SELECT SentAt::secs() FROM message ORDER BY SentAt DESC;
+SELECT SentAt FROM message ORDER BY SentAt DESC;
+SELECT SentAt FROM message.SentAt;
+SELECT SentAt FROM message::SentAt;
+SELECT * FROM message::SentAt;
+SELECT * FROM message.SentAt;
+SELECT * FROM message.SentAt.*;
