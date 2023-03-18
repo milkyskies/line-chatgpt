@@ -18,6 +18,14 @@ func (l *LineChat) SendMessage(userID string, message string) error {
     return nil
 }
 
+func (l *LineChat) SendAudioMessage(userID string, message string) error {
+    _, err := l.Client.PushMessage(userID, linebot.NewTextMessage(message)).Do()
+    if err != nil {
+        return ErrSendMessageFailed
+    }
+    return nil
+}
+
 func (l *LineChat) ReceiveMessage(userID string) (string, error) {
     // Pass the message somewhere else to handle
 

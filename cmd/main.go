@@ -45,7 +45,7 @@ func Run() error {
 	defer database.Client.Close()
 
 	messageHandler := handler.NewMessageHandler(chatServices, botServices, database)
-	lineWebhookHandler := webhook.NewLineWebhookHandler(lineChat, messageHandler)
+	lineWebhookHandler := webhook.NewLineWebhookHandler(lineChat, chatGPT, messageHandler)
 
 	// initDB := flag.Bool("init-db", false, "initialize the database")
 	// flag.Parse()

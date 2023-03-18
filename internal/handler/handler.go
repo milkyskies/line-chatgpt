@@ -55,3 +55,39 @@ func (mh *MessageHandler) HandleMessage(chatServiceName chat.ChatServiceName, bo
 
 	return nil
 }
+
+
+func (mh *MessageHandler) HandleAudioMessage(chatServiceName chat.ChatServiceName, botServiceName bot.BotServiceName, userID, messageText string) error {
+	chatService, err := mh.ChatServices.Get(chatServiceName)
+	if err != nil {
+		return errors.New("chat service not found")
+	}
+
+	botService, err := mh.BotServices.Get(botServiceName)
+	if err != nil {
+		return errors.New("bot service not found")
+	}
+
+	msg := database.NewMessage(userID, userID, messageText)
+	mh.Database.PostMessage(msg)
+
+	history, err := mh.Database.GetMessages(userID)
+	if err != nil {
+		return errors.New("failed to get history")
+	}
+
+	reply, err := botService.GenerateReply(messageText, history)
+	if err != nil {
+		return errors.New("failed to generate reply")
+	}
+
+	rpl := database.NewMessage("chatgpt", userID, reply)
+	mh.Database.PostMessage(rpl)
+
+	if err := chatService.SendMessage(userID, reply); err != nil {
+		return errors.New("failed to send message")
+	}
+
+	return nil
+}
+
