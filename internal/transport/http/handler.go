@@ -25,7 +25,7 @@ func NewHandler(lineWebhookHandler http.Handler) (*Handler, error) {
 	}
 
 	h.mapRoutes()
-	h.Router.Use(JSONMiddleware)
+	//h.Router.Use(JSONMiddleware)
 
 	h.Server = &http.Server{
 		Addr:    "0.0.0.0:8080",
@@ -41,6 +41,15 @@ func (h *Handler) mapRoutes() {
 	})
 
 	h.Router.Handle("/line", h.LineWebhookHandler)
+
+    h.Router.HandleFunc("/audio_replies/{audio_file:.+}", func(w http.ResponseWriter, r *http.Request) {
+        vars := mux.Vars(r)
+        audioFile := vars["audio_file"]
+        filePath := fmt.Sprintf("content/whisper/audio_replies/%s.m4a", audioFile)
+
+		w.Header().Set("Content-Type", "audio/mpeg")
+        http.ServeFile(w, r, filePath)
+    })
 }
 
 func (h *Handler) Serve() error {

@@ -34,7 +34,7 @@ func (db *Database) PostMessage(msg Message) error {
 }
 
 func (db *Database) GetMessages(roomId string) ([]Message, error) {
-	sql := fmt.Sprintf("SELECT * FROM messages WHERE RoomID = '%s'", roomId)
+	sql := fmt.Sprintf("SELECT * FROM messages WHERE RoomID = '%s' LIMIT 15", roomId)
 
 	res, err := db.Client.Query(sql, nil)
 	if err != nil {

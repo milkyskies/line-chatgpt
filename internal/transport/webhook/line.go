@@ -53,6 +53,7 @@ func (lwh *LineWebhookHandler) handleEvents(events []*linebot.Event) {
 
 func (lwh *LineWebhookHandler) handleMessageEvent(event *linebot.Event) error {
 	switch event.Message.(type) {
+		// TODO: HANDLE ERRORS
 	case *linebot.TextMessage:
 		return lwh.handleTextMessageEvent(event)
 	case *linebot.AudioMessage:
@@ -102,7 +103,16 @@ func (lwh *LineWebhookHandler) handleAudioMessageEvent(event *linebot.Event) err
 		return err
 	}
 
-	if err := lwh.MessageHandler.HandleAudioMessage(chat.LineChat, bot.ChatGPT, event.Source.UserID, res.Text); err != nil {
+	reply, err := lwh.MessageHandler.HandleAudioMessage(chat.LineChat, bot.ChatGPT, event.Source.UserID, res.Text)
+	if err != nil {
+		return err
+	}
+
+	if err := lwh.LineChat.GenerateAudio(reply, message.ID); err != nil {
+		return err
+	}
+
+	if err := lwh.LineChat.SendAudioMessage(event.Source.UserID, message.ID); err != nil {
 		return err
 	}
 
