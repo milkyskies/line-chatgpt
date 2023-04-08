@@ -8,8 +8,8 @@ type Database struct {
 	Client *surrealdb.DB
 }
 
-func NewDatabase(databaseUrl string) (*Database, error) {
-	client, err := surrealdb.New(databaseUrl)
+func NewDatabase(databaseURL string) (*Database, error) {
+	client, err := surrealdb.New(databaseURL)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +37,9 @@ func (db *Database) Init(username string, password string) error {
 }
 
 type Response struct {
-	Result []any `json:"result"`
-	Status string   `json:"status"`
-	Time   string   `json:"time"`
+	Result []any  `json:"result"`
+	Status string `json:"status"`
+	Time   string `json:"time"`
 }
 
 type Person struct {

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/surrealdb/surrealdb.go"
-	//uuid "github.com/satori/go.uuid"
 )
 
 type Message struct {
@@ -15,11 +14,11 @@ type Message struct {
 	SentAt      time.Time
 }
 
-func NewMessage(SenderID string, RoomID string, MessageText string) Message {
+func NewMessage(senderID string, roomID string, messageText string) Message {
 	return Message{
-		SenderID:    SenderID,
-		RoomID:      RoomID,
-		MessageText: MessageText,
+		SenderID:    senderID,
+		RoomID:      roomID,
+		MessageText: messageText,
 		SentAt:      time.Now(),
 	}
 }
@@ -33,8 +32,8 @@ func (db *Database) PostMessage(msg Message) error {
 	return nil
 }
 
-func (db *Database) GetMessages(roomId string) ([]Message, error) {
-	sql := fmt.Sprintf("SELECT * FROM messages WHERE RoomID = '%s' LIMIT 15", roomId)
+func (db *Database) GetMessages(roomID string) ([]Message, error) {
+	sql := fmt.Sprintf("SELECT * FROM messages WHERE RoomID = '%s' LIMIT 15", roomID)
 
 	res, err := db.Client.Query(sql, nil)
 	if err != nil {
@@ -56,6 +55,6 @@ func (db *Database) GetMessages(roomId string) ([]Message, error) {
 
 type MessagesResponse struct {
 	Messages []Message `json:"result"`
-	Status string   `json:"status"`
-	Time   string   `json:"time"`
+	Status   string    `json:"status"`
+	Time     string    `json:"time"`
 }

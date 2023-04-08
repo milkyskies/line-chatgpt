@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/milkyskies/line-chatgpt/internal/bot"
 	"github.com/milkyskies/line-chatgpt/internal/chat"
@@ -9,20 +10,20 @@ import (
 )
 
 type MessageHandler struct {
-	ChatServices *chat.ChatServices
-	BotServices  *bot.BotServices
-	Database	*database.Database
+	ChatServices *chat.Services
+	BotServices  *bot.Services
+	Database     *database.Database
 }
 
-func NewMessageHandler(chatServices *chat.ChatServices, botServices *bot.BotServices, database *database.Database) *MessageHandler {
+func NewMessageHandler(chatServices *chat.Services, botServices *bot.Services, database *database.Database) *MessageHandler {
 	return &MessageHandler{
 		ChatServices: chatServices,
 		BotServices:  botServices,
-		Database: database,
+		Database:     database,
 	}
 }
 
-func (mh *MessageHandler) HandleMessage(chatServiceName chat.ChatServiceName, botServiceName bot.BotServiceName, userID, messageText string) error {
+func (mh *MessageHandler) HandleMessage(chatServiceName chat.ServiceName, botServiceName bot.ServiceName, userID, messageText string) error {
 	chatService, err := mh.ChatServices.Get(chatServiceName)
 	if err != nil {
 		return errors.New("chat service not found")
@@ -34,7 +35,9 @@ func (mh *MessageHandler) HandleMessage(chatServiceName chat.ChatServiceName, bo
 	}
 
 	msg := database.NewMessage(userID, userID, messageText)
-	mh.Database.PostMessage(msg)
+	if err := mh.Database.PostMessage(msg); err != nil {
+		return fmt.Errorf("failed to post message: %w", err)
+	}
 
 	history, err := mh.Database.GetMessages(userID)
 	if err != nil {
@@ -47,7 +50,9 @@ func (mh *MessageHandler) HandleMessage(chatServiceName chat.ChatServiceName, bo
 	}
 
 	rpl := database.NewMessage("chatgpt", userID, reply)
-	mh.Database.PostMessage(rpl)
+	if err := mh.Database.PostMessage(rpl); err != nil {
+		return fmt.Errorf("failed to post reply: %w", err)
+	}
 
 	if err := chatService.SendMessage(userID, reply); err != nil {
 		return errors.New("failed to send message")
@@ -57,7 +62,7 @@ func (mh *MessageHandler) HandleMessage(chatServiceName chat.ChatServiceName, bo
 }
 
 // TODO: CLEAN THIS UP
-func (mh *MessageHandler) HandleAudioMessage(chatServiceName chat.ChatServiceName, botServiceName bot.BotServiceName, userID, messageText string) (string, error) {
+func (mh *MessageHandler) HandleAudioMessage(chatServiceName chat.ServiceName, botServiceName bot.ServiceName, userID, messageText string) (string, error) {
 	_, err := mh.ChatServices.Get(chatServiceName)
 	if err != nil {
 		return "", errors.New("chat service not found")
@@ -69,7 +74,9 @@ func (mh *MessageHandler) HandleAudioMessage(chatServiceName chat.ChatServiceNam
 	}
 
 	msg := database.NewMessage(userID, userID, messageText)
-	mh.Database.PostMessage(msg)
+	if err := mh.Database.PostMessage(msg); err != nil {
+		return "", fmt.Errorf("failed to post message: %w", err)
+	}
 
 	history, err := mh.Database.GetMessages(userID)
 	if err != nil {
@@ -82,8 +89,10 @@ func (mh *MessageHandler) HandleAudioMessage(chatServiceName chat.ChatServiceNam
 	}
 
 	rpl := database.NewMessage("chatgpt", userID, reply)
-	mh.Database.PostMessage(rpl)
+	err = mh.Database.PostMessage(rpl)
+	if err != nil {
+		return "", fmt.Errorf("failed to post reply: %w", err)
+	}
 
 	return reply, nil
 }
-

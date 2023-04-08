@@ -1,18 +1,16 @@
 package chatgpt
 
 import (
-	openai "github.com/sashabaranov/go-openai"
-
 	"github.com/milkyskies/line-chatgpt/internal/bot"
+	"github.com/milkyskies/line-chatgpt/internal/openai"
 )
 
 type ChatGPT struct {
-	Client *openai.Client
+	OpenAI *openai.OpenAI
 }
 
-func NewChatGPT(apiKey string) *ChatGPT {
-    client := openai.NewClient(apiKey)
-    return &ChatGPT{Client: client}
+func NewChatGPT(openai *openai.OpenAI) *ChatGPT {
+	return &ChatGPT{OpenAI: openai}
 }
 
 var _ bot.Bot = (*ChatGPT)(nil)

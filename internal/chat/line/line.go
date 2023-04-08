@@ -5,16 +5,16 @@ import (
 	"github.com/milkyskies/line-chatgpt/internal/chat"
 )
 
-type LineChat struct {
-    Client *linebot.Client
+type Chat struct {
+	Client *linebot.Client
 }
 
-func NewLineChat(channelSecret, channelAccessToken string) (*LineChat, error) {
-    bot, err := linebot.New(channelSecret, channelAccessToken)
-    if err != nil {
-        return nil, err
-    }
-    return &LineChat{Client: bot}, nil
+func NewLineChat(channelSecret, channelAccessToken string) (*Chat, error) {
+	bot, err := linebot.New(channelSecret, channelAccessToken)
+	if err != nil {
+		return nil, err
+	}
+	return &Chat{Client: bot}, nil
 }
 
-var _ chat.Chat = (*LineChat)(nil)
+var _ chat.Chat = (*Chat)(nil)

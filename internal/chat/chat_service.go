@@ -5,28 +5,28 @@ import (
 )
 
 var (
-    ErrServiceNotFound = errors.New("chat service not found")
-    ErrServiceExists = errors.New("chat service already registered")
+	ErrServiceNotFound = errors.New("chat service not found")
+	ErrServiceExists   = errors.New("chat service already registered")
 )
 
-type ChatServiceName int
+type ServiceName int
 
 const (
-	LineChat ChatServiceName = iota
+	LineChat ServiceName = iota
 	CustomChat
 )
 
-type ChatServices struct {
-	services map[ChatServiceName]Chat
+type Services struct {
+	services map[ServiceName]Chat
 }
 
-func NewChatServices() *ChatServices {
-	return &ChatServices{
-		services: make(map[ChatServiceName]Chat),
+func NewChatServices() *Services {
+	return &Services{
+		services: make(map[ServiceName]Chat),
 	}
 }
 
-func (cs *ChatServices) Register(name ChatServiceName, service Chat) error {
+func (cs *Services) Register(name ServiceName, service Chat) error {
 	if _, exists := cs.services[name]; exists {
 		return ErrServiceExists
 	}
@@ -34,7 +34,7 @@ func (cs *ChatServices) Register(name ChatServiceName, service Chat) error {
 	return nil
 }
 
-func (cs *ChatServices) Get(name ChatServiceName) (Chat, error) {
+func (cs *Services) Get(name ServiceName) (Chat, error) {
 	service, exists := cs.services[name]
 	if !exists {
 		return nil, ErrServiceNotFound

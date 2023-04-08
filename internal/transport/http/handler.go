@@ -13,19 +13,19 @@ import (
 )
 
 type Handler struct {
-	Router *mux.Router
-	Server *http.Server
+	Router             *mux.Router
+	Server             *http.Server
 	LineWebhookHandler http.Handler
 }
 
 func NewHandler(lineWebhookHandler http.Handler) (*Handler, error) {
 	h := &Handler{
-		Router: mux.NewRouter(),
+		Router:             mux.NewRouter(),
 		LineWebhookHandler: lineWebhookHandler,
 	}
 
 	h.mapRoutes()
-	//h.Router.Use(JSONMiddleware)
+	// h.Router.Use(JSONMiddleware)
 
 	h.Server = &http.Server{
 		Addr:    "0.0.0.0:8080",
@@ -42,14 +42,14 @@ func (h *Handler) mapRoutes() {
 
 	h.Router.Handle("/line", h.LineWebhookHandler)
 
-    h.Router.HandleFunc("/audio_replies/{audio_file:.+}", func(w http.ResponseWriter, r *http.Request) {
-        vars := mux.Vars(r)
-        audioFile := vars["audio_file"]
-        filePath := fmt.Sprintf("content/whisper/audio_replies/%s.m4a", audioFile)
+	h.Router.HandleFunc("/audio_replies/{audio_file:.+}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		audioFile := vars["audio_file"]
+		filePath := fmt.Sprintf("content/whisper/audio_replies/%s.m4a", audioFile)
 
 		w.Header().Set("Content-Type", "audio/mpeg")
-        http.ServeFile(w, r, filePath)
-    })
+		http.ServeFile(w, r, filePath)
+	})
 }
 
 func (h *Handler) Serve() error {
@@ -65,7 +65,9 @@ func (h *Handler) Serve() error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	h.Server.Shutdown(ctx)
+	if err := h.Server.Shutdown(ctx); err != nil {
+		return err
+	}
 
 	log.Println("Shut down gracefully")
 	return nil

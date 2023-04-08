@@ -24,12 +24,12 @@ var (
 
 // TODO: remove chatgpt from here
 type LineWebhookHandler struct {
-	LineChat       *line.LineChat
+	LineChat       *line.Chat
 	ChatGPT        *chatgpt.ChatGPT
 	MessageHandler *handler.MessageHandler
 }
 
-func NewLineWebhookHandler(lineChat *line.LineChat,  chatGPT *chatgpt.ChatGPT, messageHandler *handler.MessageHandler) *LineWebhookHandler {
+func NewLineWebhookHandler(lineChat *line.Chat, chatGPT *chatgpt.ChatGPT, messageHandler *handler.MessageHandler) *LineWebhookHandler {
 	return &LineWebhookHandler{LineChat: lineChat, ChatGPT: chatGPT, MessageHandler: messageHandler}
 }
 
@@ -46,14 +46,17 @@ func (lwh *LineWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 func (lwh *LineWebhookHandler) handleEvents(events []*linebot.Event) {
 	for _, event := range events {
 		if event.Type == linebot.EventTypeMessage {
-			lwh.handleMessageEvent(event)
+			err := lwh.handleMessageEvent(event)
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	}
 }
 
 func (lwh *LineWebhookHandler) handleMessageEvent(event *linebot.Event) error {
 	switch event.Message.(type) {
-		// TODO: HANDLE ERRORS
+	// TODO: HANDLE ERRORS
 	case *linebot.TextMessage:
 		return lwh.handleTextMessageEvent(event)
 	case *linebot.AudioMessage:
@@ -69,11 +72,9 @@ func (lwh *LineWebhookHandler) handleTextMessageEvent(event *linebot.Event) erro
 		return ErrInvalidMessage
 	}
 
-	if err := lwh.MessageHandler.HandleMessage(chat.LineChat, bot.ChatGPT, event.Source.UserID, message.Text); err != nil {
-		return err
-	}
+	err := lwh.MessageHandler.HandleMessage(chat.LineChat, bot.ChatGPT, event.Source.UserID, message.Text)
 
-	return nil
+	return err
 }
 
 func (lwh *LineWebhookHandler) handleAudioMessageEvent(event *linebot.Event) error {
@@ -86,7 +87,7 @@ func (lwh *LineWebhookHandler) handleAudioMessageEvent(event *linebot.Event) err
 	if err != nil {
 		return err
 	}
-	//defer content.Content.Close()
+	// defer content.Content.Close()
 
 	if err := saveAsM4A(content.Content, fmt.Sprintf("%s.m4a", message.ID)); err != nil {
 		return err
@@ -98,7 +99,7 @@ func (lwh *LineWebhookHandler) handleAudioMessageEvent(event *linebot.Event) err
 	}
 
 	ctx := context.Background()
-	res, err := lwh.ChatGPT.Client.CreateTranscription(ctx, req)
+	res, err := lwh.ChatGPT.OpenAI.Client.CreateTranscription(ctx, req)
 	if err != nil {
 		return err
 	}
@@ -112,11 +113,9 @@ func (lwh *LineWebhookHandler) handleAudioMessageEvent(event *linebot.Event) err
 		return err
 	}
 
-	if err := lwh.LineChat.SendAudioMessage(event.Source.UserID, message.ID); err != nil {
-		return err
-	}
+	err = lwh.LineChat.SendAudioMessage(event.Source.UserID, message.ID)
 
-	return nil
+	return err
 }
 
 // TODO: move this
@@ -141,9 +140,7 @@ func saveAsM4A(r io.ReadCloser, fileName string) error {
 	}
 
 	// Close the ReadCloser
-	if err := r.Close(); err != nil {
-		return err
-	}
+	err = r.Close()
 
-	return nil
+	return err
 }

@@ -3,8 +3,6 @@ package chatgpt
 import (
 	"context"
 	"errors"
-
-	//"fmt"
 	"strings"
 
 	"github.com/milkyskies/line-chatgpt/internal/database"
@@ -28,23 +26,22 @@ func (c *ChatGPT) GenerateReply(prompt string, history []database.Message) (stri
 }
 
 func messageToChatCompletionMessages(messages []database.Message) []openai.ChatCompletionMessage {
-    var chatCompletionMessages []openai.ChatCompletionMessage
-    for _, message := range messages {
-        var role string
-        if message.SenderID == "chatgpt" {
-            role = openai.ChatMessageRoleAssistant
-        } else {
-            role = openai.ChatMessageRoleUser
-        }
-        chatCompletionMessage := openai.ChatCompletionMessage{
-            Role:    role,
-            Content: message.MessageText,
-        }
-        chatCompletionMessages = append(chatCompletionMessages, chatCompletionMessage)
-    }
-    return chatCompletionMessages
+	var chatCompletionMessages []openai.ChatCompletionMessage
+	for _, message := range messages {
+		var role string
+		if message.SenderID == "chatgpt" {
+			role = openai.ChatMessageRoleAssistant
+		} else {
+			role = openai.ChatMessageRoleUser
+		}
+		chatCompletionMessage := openai.ChatCompletionMessage{
+			Role:    role,
+			Content: message.MessageText,
+		}
+		chatCompletionMessages = append(chatCompletionMessages, chatCompletionMessage)
+	}
+	return chatCompletionMessages
 }
-
 
 func (c *ChatGPT) createChatCompletion(prompt string, history []database.Message) (openai.ChatCompletionResponse, error) {
 	messageHistory := messageToChatCompletionMessages(history)
@@ -53,10 +50,10 @@ func (c *ChatGPT) createChatCompletion(prompt string, history []database.Message
 		Content: prompt,
 	})
 
-	return c.Client.CreateChatCompletion(
+	return c.OpenAI.Client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model:    openai.GPT4,
 			Messages: messageHistory,
 		},
 	)

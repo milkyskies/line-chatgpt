@@ -6,19 +6,19 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-
 	"github.com/milkyskies/line-chatgpt/internal/bot"
 	"github.com/milkyskies/line-chatgpt/internal/bot/chatgpt"
 	"github.com/milkyskies/line-chatgpt/internal/chat"
 	"github.com/milkyskies/line-chatgpt/internal/chat/line"
 	"github.com/milkyskies/line-chatgpt/internal/database"
 	"github.com/milkyskies/line-chatgpt/internal/handler"
+	"github.com/milkyskies/line-chatgpt/internal/openai"
 	"github.com/milkyskies/line-chatgpt/internal/transport/http"
 	"github.com/milkyskies/line-chatgpt/internal/transport/webhook"
 )
 
-var serviceAccountEmail = "<project id>-<base64 string>@developer.gserviceaccount.com"
-var serviceAccountKey = []byte(`<contents of your service account key file>`)
+// var serviceAccountEmail = "<project id>-<base64 string>@developer.gserviceaccount.com"
+// var serviceAccountKey = []byte(`<contents of your service account key file>`)
 
 func Run() error {
 	fmt.Println("starting LINE ChatGPT Bot")
@@ -32,14 +32,19 @@ func Run() error {
 	chatServices := chat.NewChatServices()
 	botServices := bot.NewBotServices()
 
-	chatGPT := chatgpt.NewChatGPT(os.Getenv("OPENAI_API_KEY"))
-	botServices.Register(bot.ChatGPT, chatGPT)
+	openai := openai.NewOpenAI(os.Getenv("OPENAI_API_KEY"))
+	chatGPT := chatgpt.NewChatGPT(openai)
+	if err = botServices.Register(bot.ChatGPT, chatGPT); err != nil {
+		return fmt.Errorf("failed to register ChatGPT bot: %v", err)
+	}
 
 	lineChat, err := line.NewLineChat(os.Getenv("LINE_CHANNEL_SECRET"), os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 	if err != nil {
-		log.Fatalf("failed to initialize LINE chat: %v", err)
+		return fmt.Errorf("failed to initialize LINE chat: %v", err)
 	}
-	chatServices.Register(chat.LineChat, lineChat)
+	if err := chatServices.Register(chat.LineChat, lineChat); err != nil {
+		return fmt.Errorf("failed to register LINE chat: %v", err)
+	}
 
 	database, err := database.NewDatabase(os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -58,16 +63,16 @@ func Run() error {
 	// 	}
 	// }
 	if err := database.Init(os.Getenv("DATABASE_USERNAME"), os.Getenv("DATABASE_PASSWORD")); err != nil {
-		log.Fatalf("failed to initialize database: %v", err)
+		return fmt.Errorf("failed to initialize database: %v", err)
 	}
 
 	httpHandler, err := http.NewHandler(lineWebhookHandler)
 	if err != nil {
-		log.Fatalf("failed to initialize HTTP handler: %v", err)
+		return fmt.Errorf("failed to initialize HTTP handler: %v", err)
 	}
 
 	if err := httpHandler.Serve(); err != nil {
-		log.Fatalf("failed to serve HTTP handler: %v", err)
+		return fmt.Errorf("failed to serve HTTP handler: %v", err)
 	}
 
 	return nil
