@@ -46,7 +46,7 @@ func (mh *MessageHandler) HandleMessage(chatServiceName chat.ServiceName, botSer
 
 	reply, err := botService.GenerateReply(messageText, history)
 	if err != nil {
-		return errors.New("failed to generate reply")
+		return errors.New("failed to generate reply: " + err.Error())
 	}
 
 	rpl := database.NewMessage("chatgpt", userID, reply)

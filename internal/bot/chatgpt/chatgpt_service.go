@@ -44,17 +44,29 @@ func messageToChatCompletionMessages(messages []database.Message) []openai.ChatC
 }
 
 func (c *ChatGPT) createChatCompletion(prompt string, history []database.Message) (openai.ChatCompletionResponse, error) {
-	messageHistory := messageToChatCompletionMessages(history)
-	messageHistory = append(messageHistory, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
-		Content: prompt,
-	})
+	messages := messageToChatCompletionMessages(history)
+	messages = append(
+		messages,
+		openai.ChatCompletionMessage{
+			Role:    openai.ChatMessageRoleUser,
+			Content: prompt,
+		},
+	)
+
+	systemMessage := "For this conversation, your name is Chatty. Respond to that name please. Also respond in the language that the last message from the user was in. 日本語の場合は、かならず大阪弁（関西弁）で返してな。"
+
+	messagesWithSystemMessage := make([]openai.ChatCompletionMessage, len(messages)+1)
+	messagesWithSystemMessage[0] = openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleSystem,
+		Content: systemMessage,
+	}
+	copy(messagesWithSystemMessage[1:], messages)
 
 	return c.OpenAI.Client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:    openai.GPT4,
-			Messages: messageHistory,
+			Model:    openai.GPT3Dot5Turbo,
+			Messages: messagesWithSystemMessage,
 		},
 	)
 }

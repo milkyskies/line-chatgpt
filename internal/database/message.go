@@ -33,7 +33,7 @@ func (db *Database) PostMessage(msg Message) error {
 }
 
 func (db *Database) GetMessages(roomID string) ([]Message, error) {
-	sql := fmt.Sprintf("SELECT * FROM messages WHERE RoomID = '%s' LIMIT 15", roomID)
+	sql := fmt.Sprintf("SELECT * FROM messages WHERE RoomID = '%s' ORDER BY SentAt DESC LIMIT 15", roomID)
 
 	res, err := db.Client.Query(sql, nil)
 	if err != nil {
@@ -49,6 +49,19 @@ func (db *Database) GetMessages(roomID string) ([]Message, error) {
 	if err := surrealdb.Unmarshal(response.Result, &messages); err != nil {
 		return nil, err
 	}
+
+	for i := 0; i < len(messages)/2; i++ {
+		j := len(messages) - i - 1
+		messages[i], messages[j] = messages[j], messages[i]
+	}
+
+	// for _, message := range messages {
+	// 	truncatedMessage := message.MessageText
+	// 	if len(truncatedMessage) > 50 {
+	// 		truncatedMessage = truncatedMessage[:50] + "..."
+	// 	}
+	// 	fmt.Printf("(%s) %s %s: %s\n", message.RoomID, message.SentAt, message.SenderID, truncatedMessage)
+	// }
 
 	return messages, nil
 }
