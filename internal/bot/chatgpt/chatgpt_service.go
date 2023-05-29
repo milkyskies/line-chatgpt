@@ -53,7 +53,7 @@ func (c *ChatGPT) createChatCompletion(prompt string, history []database.Message
 		},
 	)
 
-	systemMessage := "For this conversation, your name is Chatty. Respond to that name please. Also respond in the language that the last message from the user was in. 日本語の場合は、かならず大阪弁（関西弁）で返してな。"
+	systemMessage := "For this conversation, your name is Chatty. Respond to that name please. Also respond in the language that the last message from the user was in. "
 
 	messagesWithSystemMessage := make([]openai.ChatCompletionMessage, len(messages)+1)
 	messagesWithSystemMessage[0] = openai.ChatCompletionMessage{

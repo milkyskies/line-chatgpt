@@ -17,9 +17,6 @@ import (
 	"github.com/milkyskies/line-chatgpt/internal/transport/webhook"
 )
 
-// var serviceAccountEmail = "<project id>-<base64 string>@developer.gserviceaccount.com"
-// var serviceAccountKey = []byte(`<contents of your service account key file>`)
-
 func Run() error {
 	fmt.Println("starting LINE ChatGPT Bot")
 

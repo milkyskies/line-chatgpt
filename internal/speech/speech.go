@@ -1,8 +1,7 @@
-package line
+package speech
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,55 +12,9 @@ import (
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
 	"cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"cloud.google.com/go/translate"
-	"github.com/hajimehoshi/go-mp3"
-	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
-var (
-	ErrSendMessageFailed          = errors.New("failed to send message")
-	ErrReceiveMessageNotSupported = errors.New("receive message not supported for LINE")
-)
-
-func (l *Chat) SendMessage(userID string, message string) error {
-	_, err := l.Client.PushMessage(userID, linebot.NewTextMessage(message)).Do()
-	if err != nil {
-		return ErrSendMessageFailed
-	}
-	return nil
-}
-
-func (l *Chat) SendAudioMessage(userID string, id string) error {
-	f, err := os.Open(filepath.Join("content/whisper/audio_replies", fmt.Sprintf("%s.mp3", id)))
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	d, err := mp3.NewDecoder(f)
-	if err != nil {
-		return err
-	}
-
-	sampleSize := 4
-	samples := int(d.Length()) / sampleSize
-	duration := samples / d.SampleRate() * 1000
-
-	fmt.Println("Duration: ", duration)
-
-	hostname := os.Getenv("HOSTNAME")
-
-	audioMessage := linebot.NewAudioMessage(hostname+"/audio_replies/"+id, duration)
-
-	if _, err := l.Client.PushMessage(userID, audioMessage).Do(); err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	return nil
-}
-
-// TODO: Move this
-func (l *Chat) GenerateAudio(message string, id string) error {
+func GenerateAudio(message string, id string) error {
 	ctx := context.Background()
 
 	client, err := texttospeech.NewClient(ctx)

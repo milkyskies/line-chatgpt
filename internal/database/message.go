@@ -55,14 +55,6 @@ func (db *Database) GetMessages(roomID string) ([]Message, error) {
 		messages[i], messages[j] = messages[j], messages[i]
 	}
 
-	// for _, message := range messages {
-	// 	truncatedMessage := message.MessageText
-	// 	if len(truncatedMessage) > 50 {
-	// 		truncatedMessage = truncatedMessage[:50] + "..."
-	// 	}
-	// 	fmt.Printf("(%s) %s %s: %s\n", message.RoomID, message.SentAt, message.SenderID, truncatedMessage)
-	// }
-
 	return messages, nil
 }
 
