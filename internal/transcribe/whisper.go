@@ -27,7 +27,7 @@ func (w *Whisper) TranscribeAudioFile(filename string) (string, error) {
 
 	resp, err := w.OpenAI.Client.CreateTranscription(ctx, req)
 	if err != nil {
-		fmt.Printf("Transcription error: %v\n", err)
+		err := fmt.Errorf("transcription error: %v", err)
 		return "", err
 	}
 

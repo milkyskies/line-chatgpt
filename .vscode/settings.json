@@ -4,6 +4,9 @@
     "joho",
     "linebot",
     "msgn",
-    "sashabaranov"
+    "sashabaranov",
+    "Ssml",
+    "texttospeech",
+    "texttospeechpb"
   ]
 }
