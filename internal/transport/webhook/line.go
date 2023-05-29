@@ -15,6 +15,7 @@ import (
 	"github.com/milkyskies/line-chatgpt/internal/chat"
 	"github.com/milkyskies/line-chatgpt/internal/chat/line"
 	"github.com/milkyskies/line-chatgpt/internal/handler"
+	"github.com/milkyskies/line-chatgpt/internal/speech"
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -22,11 +23,12 @@ var (
 	ErrInvalidMessage = errors.New("invalid message")
 )
 
-// TODO: remove chatgpt from here
+// TODO: remove chatgpt and speech from here
 type LineWebhookHandler struct {
-	LineChat       *line.Chat
-	ChatGPT        *chatgpt.ChatGPT
-	MessageHandler *handler.MessageHandler
+	LineChat        *line.Chat
+	ChatGPT         *chatgpt.ChatGPT
+	MessageHandler  *handler.MessageHandler
+	SpeechGenerator *speech.SpeechGenerator
 }
 
 func NewLineWebhookHandler(lineChat *line.Chat, chatGPT *chatgpt.ChatGPT, messageHandler *handler.MessageHandler) *LineWebhookHandler {
@@ -109,7 +111,7 @@ func (lwh *LineWebhookHandler) handleAudioMessageEvent(event *linebot.Event) err
 		return err
 	}
 
-	if err := lwh.LineChat.GenerateAudio(reply, message.ID); err != nil {
+	if err := lwh.SpeechGenerator.GenerateAudio(reply, message.ID); err != nil {
 		return err
 	}
 
