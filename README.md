@@ -1,8 +1,8 @@
-# LINE-ChatGPT
+# LINE ChatGPT Bot
 
 ## English
 
-Welcome to LINE-ChatGPT, a LINE bot integration with OpenAI's ChatGPT, allowing users to interact with ChatGPT through LINE messaging app. This bot is designed to respond both text and audio messages.
+A LINE bot integrated with OpenAI's ChatGPT, allowing users to interact with ChatGPT through LINE messaging app. This bot is designed to respond both text and audio messages.
 
 #### Core Components:
 
@@ -16,7 +16,7 @@ Please ensure you follow the project's guidelines and documentation for proper s
 
 ## 日本語
 
-LINE-ChatGPTへようこそ、これはOpenAIのChatGPTとLINEメッセージングアプリを統合したLINE botです。このボットはテキストメッセージと音声メッセージの両方に対応しています。
+OpenAIのChatGPTとLINEメッセージングアプリを統合したLINEのボットです。このボットはテキストメッセージと音声メッセージの両方に対応しています。
 
 #### 主要なコンポーネント:
 
